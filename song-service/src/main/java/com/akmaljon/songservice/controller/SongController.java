@@ -26,7 +26,7 @@ public class SongController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SongDto> getSong(@PathVariable Long id) {
+    public ResponseEntity<SongDto> getSong(@PathVariable String id) {
         SongDto songDto = songService.getSong(id);
         return ResponseEntity.ok(songDto);
     }

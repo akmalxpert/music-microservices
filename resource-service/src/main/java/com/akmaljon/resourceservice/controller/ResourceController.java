@@ -27,7 +27,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<byte[]> getResource(@PathVariable Long id) {
+    public ResponseEntity<byte[]> getResource(@PathVariable String id) {
         byte[] audioData = resourceService.getResource(id);
 
         HttpHeaders headers = new HttpHeaders();
