@@ -1,4 +1,14 @@
 services:
+  # Eureka Server for Service Discovery
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
   # Database for Resource Service
   resource-db:
     image: postgres:17-alpine
@@ -10,6 +20,8 @@ services:
       - "5432:5432"
     volumes:
       - ./init-scripts/resource-db:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-network
 
   # Database for Song Service
   song-db:
@@ -22,6 +34,8 @@ services:
       - "5433:5432"
     volumes:
       - ./init-scripts/song-db:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-network
 
   # Resource Service
   resource-service:
@@ -35,21 +49,42 @@ services:
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     depends_on:
-      - resource-db
-      - song-service
-
+      eureka-server:
+        condition: service_started
+      resource-db:
+        condition: service_started
+      song-service:
+        condition: service_started
+    networks:
+      - microservices-network
+  
+  
   # Song Service
   song-service:
     build:
       context: ./song-service
       dockerfile: Dockerfile
+    deploy:
+      replicas: 2
     ports:
-      - "8082:8082"
+      - 8082-8083:8082
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
     depends_on:
-      - song-db
+      eureka-server:
+        condition: service_started
+      song-db:
+        condition: service_started
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
 
