@@ -9,21 +9,6 @@ services:
     networks:
       - microservices-network
 
-  # API Gateway
-  api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-    depends_on:
-      eureka-server:
-        condition: service_started
-    networks:
-      - microservices-network
-
   # Database for Resource Service
   resource-db:
     image: postgres:17-alpine
@@ -84,13 +69,12 @@ services:
     deploy:
       replicas: 2
     ports:
-      - "8082-8085:8082"
+      - 8082-8083:8082
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
       EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
-      SERVER_PORT: 8082
     depends_on:
       eureka-server:
         condition: service_started
